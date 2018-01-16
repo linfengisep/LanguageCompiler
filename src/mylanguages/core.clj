@@ -5,6 +5,7 @@
 	   (clojure.asm.commons Method GeneratorAdapter)
   )
 )
+;;level-0, one dimension vector binary operation.
 ;;parser vector
 (def array-parser
    (insta/parser
@@ -18,17 +19,30 @@
        <term> =  list | <'('> prog <')'>
        <space> = <#'[ ]'*>
        number = #'-?[0-9]*'
-       list = <'['>(number | <space>)*<']'>
+       list = <'['> (number | <space>)* <']'>
       "
    )
 )
-
-(def array-interpret
-      {:number #(Long/parseLong %)
-         :add (fn[a b] (map + a b))
-         :sub (fn[a b] (map - a b))
-         :mul (fn[a b] (map * a b))
-         :div (fn[a b] (map / a b))
-         :list (comp arr array)
-      }
+;;(filter (comp not zero?) [0 1 0 2 0 3 0 4])
+;;(1 2 3 4)
+(defn array-interpreter [ast]
+      (insta/transform
+         {:number #(Long/parseLong %)
+            :add (fn[x y] (map + x y))
+            :sub (fn[x y] (map - x y))
+            :mul (fn[x y] (map * x y))
+            :div (fn[x y] (map / x y))
+            :list (comp list)
+         } ast)
 )
+
+(def array-operation (->> "[1 2]-[3 4]" array-parser array-interpreter (into [])))
+;array-operation
+
+;(->> "[1 2]-[3 4]" array-parser array-interpreter (into []))
+;(->> "[1 2]+[3 4]" array-parser array-interpreter (into []))
+;(->> "[1 2]*[3 4]" array-parser array-interpreter (into []))
+;(->> "[1 2]/[3 4]" array-parser array-interpreter (into []))
+
+
+;;;;level-1 two dimension vector binary operation.
